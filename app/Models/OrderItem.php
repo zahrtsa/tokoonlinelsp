@@ -10,7 +10,7 @@ class OrderItem extends Model
     use HasFactory;
     protected $guarded =[];
 
-    public function namaproduct(){
-        return $this->belongTo(Product::class, 'product_id', 'id');
-    }
+    // public function orderitem(){
+    //     return $this->belongsTo(Product::class, 'product_id', 'id', 'user_id');
+    // }
 }

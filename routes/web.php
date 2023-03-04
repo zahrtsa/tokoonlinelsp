@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
 Auth::routes();
@@ -25,16 +25,19 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::group(['middleware' => ['auth', 'admin']], function () {
     //Akses untuk Admin
     Route::resource('product', App\Http\Controllers\ProductController::class);
-
-    Route::get('/product/destroy/{$id}', [App\Http\Controllers\ProductController::class, 'destroy'])->name('product.destroy');
-    //Route::get('/product/show', [App\Http\Controllers\ProductController::class, 'show'])->name('dashboard');
+    Route::resource('orderAdmin', App\Http\Controllers\OrderController::class);
+    Route::resource('transaksi', App\Http\Controllers\TransaksiController::class);
+    //Route::get('product/show/{id}', [App\Http\Controllers\ProductController::class, 'show'])->name('product.show');
+    Route::get('product/destroy/{$id}', [App\Http\Controllers\ProductController::class, 'destroy'])->name('product.destroy');
+    // Route::get('/product/show/{$id}', [App\Http\Controllers\ProductController::class, 'show'])->name('showdetail');
 });
 
 //rute User
 Route::group(['middleware' => ['auth', 'customer']], function () {
 
     //Akses untuk User
-    Route::resource('order', App\Http\Controllers\OrderItemController::class);
+    Route::resource('orderUser', App\Http\Controllers\OrderItemController::class);
+    Route::get('product/show/{id}', [App\Http\Controllers\ProductController::class, 'show'])->name('product.show');
     //Route::get('product', [App\Http\Controllers\ProductController::class, 'dashboard'])->name('dashboard.user');
 });
 

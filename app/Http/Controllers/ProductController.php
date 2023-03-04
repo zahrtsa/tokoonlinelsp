@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use Illuminate\Http\Request;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -20,6 +21,8 @@ class ProductController extends Controller
         if(Auth::user()->level == 'admin') {
             $product = Product::all();
             return view('product.index', compact('product'));
+        } else {
+            return view('home');
         }
     }
 
@@ -43,13 +46,22 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         //
-        $input = $request->all();
-        $product= Product::create($input);
+        $imageName = time().'.'.$request->image->extension();
+
+        $request->image->move(public_path('images'), $imageName);
+        //$image_path = $request->file('image')->store('image', 'public');
+
+        $product = new Product;
+        $product->namaproduct = $request->namaproduct;
+        $product->deskripsi = $request->deskripsi;
+        $product->harga = $request->harga;
+        $product->qty = $request->qty;
+        $product->image = $imageName;
         // dd($category);
         if ($product->save()) {
-            return redirect()->route('product.index');
+            return redirect()->route('product.index')->with('success','DATA BERHASILL CUY');
         } else{
-            return redirect()->back();
+            return redirect()->back()->with('error','KAGAK BISA CUY');
         }
     }
 
@@ -59,10 +71,11 @@ class ProductController extends Controller
      * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function show(Product $product)
+    public function show($id)
     {
         //
-        return view('dashboard.index');
+        $product = Product::find($id);
+        return view('product.show', compact('product'));
     }
 
     /**
@@ -88,8 +101,19 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $product = Product::find($id);
-        $product->update($request->all());
-        return redirect()->route('product.index');
+        if($request->hasFile('image')) {
+            $imageName = time().'.'.$request->image->extension();
+            $request->image->move(public_path('images'), $imageName);
+            $product->image = $imageName;
+        }
+
+        $product->namaproduct = $request->namaproduct;
+        $product->deskripsi = $request->deskripsi;
+        $product->harga = $request->harga;
+        $product->qty = $request->qty;
+        $product->save();
+        return redirect()->route('product.index')->with('success','DATA  BISA GANTI CUY');
+      
     }
 
     /**
@@ -100,8 +124,8 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        //
-        Product::find($id);
-        return redirect()->route('product.destroy');
+        Product::destroy($id);
+        //$product = Product::where('id', $id)->delete();
+        return redirect()->route('product.index');
     }
 }

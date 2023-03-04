@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OrderItemController extends Controller
 {
@@ -16,7 +19,9 @@ class OrderItemController extends Controller
     public function index()
     {
         //
-       return view('order.index');
+        $orderitem = Order::where('user_id', '=', Auth::user()->id)->get();
+        return view('order.user', compact('orderitem') );
+
     }
 
     /**
@@ -38,6 +43,26 @@ class OrderItemController extends Controller
     public function store(Request $request)
     {
         //
+        $product = Product::find($request->input('product_id'));
+        $recentQty = $product->qty - $request->input('jumlah_order');
+        $harga = $product->harga;
+
+        if ($recentQty < 0) {
+            return redirect()->back()->with('error', 'Maaf Stok tidak mencukupi');
+        }
+        $product->qty = $recentQty;
+        $product->update();
+
+        $order = new Order();
+        $order->product_id = $request->input('product_id');
+        $order->user_id = Auth::user()->id;
+        $order->jumlah_order = $request->input('jumlah_order');
+        $order->harga = $harga;
+        $order->total = $harga * $request->jumlah_order;
+
+        $order->save();
+        return redirect('/orderUser');
+
     }
 
     /**
@@ -80,8 +105,10 @@ class OrderItemController extends Controller
      * @param  \App\Models\OrderItem  $orderItem
      * @return \Illuminate\Http\Response
      */
-    public function destroy(OrderItem $orderItem)
+    public function destroy( $id)
     {
         //
+        Order::destroy($id);
+        return redirect()->route('order.user')->with('info','Pesanan dihilangkan');
     }
 }

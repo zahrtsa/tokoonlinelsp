@@ -15,7 +15,12 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('user_id');
+            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('product_id')->constrained('products');
+            $table->integer('jumlah_order');
+            $table->bigInteger('harga');
+            $table->enum('status', ['confirm', 'process' , 'cancel']);
+            $table->bigInteger('total');
             $table->timestamps();
         });
     }
